@@ -3,6 +3,7 @@
 #include "AudioTools.h"
 #include "AudioTools/AudioCodecs/CodecMP3Helix.h"
 #include "AudioTools/CoreAudio/VolumeStream.h"
+#include "AudioTools/CoreAudio/AudioLogger.h"
 
 constexpr int PIN_SD_CS   = 10;  // <-- set to your SD CS
 constexpr int PIN_SD_SCK  = 6;   // <-- set to your SD SCK
@@ -29,7 +30,7 @@ size_t playIndex = 0;
 bool sequenceActive = false;
 
 SPIClass spi = SPI;
-AudioToolsLogger &logger = AudioToolsLogger;
+audio_tools::AudioLogger &logger = audio_tools::AudioToolsLogger;
 I2SStream i2s;                                     // I2S output to DAC/amp
 VolumeStream volume(i2s);                          // Volume-controlled sink
 EncodedAudioStream decoder(&volume, new MP3DecoderHelix()); // MP3 decoder
@@ -42,7 +43,8 @@ bool startFile(size_t idx) {
   }
   audioFile = SD.open(kFiles[idx]);
   if (!audioFile) {
-    logger.println("File open failed");
+    logger.print("File open failed");
+    logger.println();
     return false;
   }
   copier.begin(decoder, audioFile);
@@ -71,7 +73,8 @@ void setup() {
   // Bring up SD over SPI
   spi.begin(PIN_SD_SCK, PIN_SD_MISO, PIN_SD_MOSI, PIN_SD_CS);
   if (!SD.begin(PIN_SD_CS, spi, 8000000U)) {       // 8 MHz; raise if your wiring is short/clean
-    logger.println("SD init failed");
+    logger.print("SD init failed");
+    logger.println();
     while (true) delay(1000);
   }
 
