@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <string.h>
 #include "driver/i2s_std.h"
+#include "driver/gpio.h"
 #include "driver/spi_common.h"
 #include "esp_check.h"
 #include "esp_log.h"
@@ -11,6 +12,7 @@
 #include "sdmmc_cmd.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
+#include "freertos/semphr.h"
 #include "mp3dec.h"
 
 // Verified exposed header pins; keep synchronized with README.md.
@@ -21,11 +23,19 @@
 #define SD_MOSI GPIO_NUM_19
 #define SD_CLK GPIO_NUM_20
 #define SD_MISO GPIO_NUM_21
-#define VOLUME_PERCENT 40
+#define PIR_INPUT GPIO_NUM_22
+#define PIR_POLL_MS 20
+// 1 enables motion-triggered audio; 0 runs only the sensor monitor.
+#define ENABLE_AUDIO_PLAYBACK 1
+#define VOLUME_PERCENT 20
+#define ENABLE_DECODER_DEBUG 0
 // 120 ms at 48 kHz: covers measured ~39 ms SD read stalls with margin.
 // 12 x 480 stereo 16-bit frames consume 23,040 bytes of DMA sample memory.
 #define DMA_DESCRIPTORS 12
 #define DMA_FRAMES 480
+
+// Keep operational sensor/playback messages and all errors visible.
+#define DECODER_LOGI(...) do { if (ENABLE_DECODER_DEBUG) { ESP_LOGI(__VA_ARGS__); } } while (0)
 
 typedef struct {
     uint64_t read_us, decode_us, prepare_us, pace_us, audio_us;
@@ -37,11 +47,11 @@ typedef struct {
 static void report_timing(timing_t *t)
 {
     if (!t->frames) return;
-    ESP_LOGI("audio_diag", "frames=%u audio/frame=%" PRIu64 "us | SD avg/max=%" PRIu64 "/%" PRIu64
+    DECODER_LOGI("audio_diag", "frames=%u audio/frame=%" PRIu64 "us | SD avg/max=%" PRIu64 "/%" PRIu64
              "us | decode avg/max=%" PRIu64 "/%" PRIu64 "us",
              t->frames, t->audio_us / t->frames, t->read_us / t->frames,
              t->max_read_us, t->decode_us / t->frames, t->max_decode_us);
-    ESP_LOGI("audio_diag", "prepare+pace avg=%" PRIu64 "us | over-budget=%u | max feed gap=%" PRIu64
+    DECODER_LOGI("audio_diag", "prepare+pace avg=%" PRIu64 "us | over-budget=%u | max feed gap=%" PRIu64
              "us | gaps exceeding DMA capacity=%u",
              (t->prepare_us + t->pace_us) / t->frames, t->over_budget,
              t->max_feed_gap_us, t->long_feed_gaps);
@@ -61,6 +71,9 @@ static int16_t pcm[2304];
 static int16_t stereo[2304];
 static i2s_chan_handle_t tx;
 static int current_rate = 32000;
+static SemaphoreHandle_t playback_ready;
+static TaskHandle_t player_handle;
+
 
 static esp_err_t write_audio(const int16_t *data, size_t bytes)
 {
@@ -190,7 +203,7 @@ static bool play_mp3(const char *path)
             ok = false;
             break;
         }
-        if (frames == 0) ESP_LOGI(TAG, "MP3: %d Hz, %d channel(s), %d kbps",
+        if (frames == 0) DECODER_LOGI(TAG, "MP3: %d Hz, %d channel(s), %d kbps",
                                  info.samprate, info.nChans, info.bitrate / 1000);
         if (current_rate != info.samprate) {
             ESP_ERROR_CHECK(i2s_channel_disable(tx));
@@ -294,24 +307,68 @@ static void player_task(void *arg)
     };
     ESP_ERROR_CHECK(i2s_channel_init_std_mode(tx, &config));
     ESP_ERROR_CHECK(i2s_channel_enable(tx));
-    ESP_LOGI(TAG, "Audio: DIN=1 BCLK=2 LRC=3. Starting in 2 seconds.");
-    ESP_LOGI("audio_diag", "Decoder=Helix fixed-point; no artificial per-frame delay");
-    ESP_LOGI("audio_diag", "Timing every 5s; tick=%ums, DMA=%u frames. Feed gaps are estimates, not hardware underrun counts.",
+    ESP_LOGI(TAG, "Audio: DIN=1 BCLK=2 LRC=3. Preparing motion-triggered playback.");
+    DECODER_LOGI("audio_diag", "Decoder=Helix fixed-point; no artificial per-frame delay");
+    DECODER_LOGI("audio_diag", "Timing every 5s; tick=%ums, DMA=%u frames. Feed gaps are estimates, not hardware underrun counts.",
              (unsigned)portTICK_PERIOD_MS, DMA_DESCRIPTORS * DMA_FRAMES);
     silence(2);
+    size_t track = 0;
     while (true) {
-        for (size_t track = 0; track < PLAYLIST_COUNT; ++track) {
-            ESP_LOGI(TAG, "Track %u/%u", (unsigned)(track + 1), (unsigned)PLAYLIST_COUNT);
-            bool ok = play_mp3(playlist[track]);
-            if (!ok) ESP_LOGW(TAG, "Skipping failed track: %s", playlist[track]);
-            silence(ok ? 3 : 5);
+        ESP_LOGI(TAG, "Ready for motion; next track %u/%u", (unsigned)(track + 1), (unsigned)PLAYLIST_COUNT);
+        // A single readiness token prevents queuing triggers while busy.
+        xSemaphoreGive(playback_ready);
+        ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+        ESP_LOGI(TAG, "Motion accepted: track %u/%u", (unsigned)(track + 1), (unsigned)PLAYLIST_COUNT);
+        bool ok = play_mp3(playlist[track]);
+        if (!ok) ESP_LOGW(TAG, "Skipping failed track: %s", playlist[track]);
+        silence(ok ? 3 : 5); // Flush queued audio and keep the cooldown silent.
+        track = (track + 1) % PLAYLIST_COUNT;
+    }
+}
+
+static void sensor_task(void *arg)
+{
+    (void)arg;
+    gpio_config_t config = {
+        .pin_bit_mask = 1ULL << PIR_INPUT,
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_DISABLE,
+        .pull_down_en = GPIO_PULLDOWN_DISABLE,
+        .intr_type = GPIO_INTR_DISABLE,
+    };
+    ESP_ERROR_CHECK(gpio_config(&config));
+    int previous = gpio_get_level(PIR_INPUT);
+    uint32_t triggers = 0;
+    ESP_LOGI("pir", "Monitoring GPIO22; initial level=%d. Startup transitions may occur while the sensor settles.", previous);
+    while (true) {
+        vTaskDelay(pdMS_TO_TICKS(PIR_POLL_MS));
+        int level = gpio_get_level(PIR_INPUT);
+        if (level && !previous) {
+            ESP_LOGI("pir", "Motion detected: trigger #%" PRIu32 " (GPIO22 LOW -> HIGH)", ++triggers);
+            if (ENABLE_AUDIO_PLAYBACK) {
+                if (xSemaphoreTake(playback_ready, 0) == pdTRUE) {
+                    xTaskNotifyGive(player_handle);
+                } else {
+                    ESP_LOGI("pir", "Trigger ignored: audio is busy, cooling down, or not ready");
+                }
+            }
         }
+        previous = level;
     }
 }
 
 void app_main(void)
 {
+    ESP_LOGI("birdbox", "Motion playback enabled=%d; volume=%d%%", ENABLE_AUDIO_PLAYBACK, VOLUME_PERCENT);
+    playback_ready = xSemaphoreCreateBinary();
+    ESP_ERROR_CHECK(playback_ready ? ESP_OK : ESP_ERR_NO_MEM);
+    BaseType_t sensor_result = xTaskCreate(sensor_task, "pir_monitor", 3072, NULL, 3, NULL);
+    ESP_ERROR_CHECK(sensor_result == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
+    if (!ENABLE_AUDIO_PLAYBACK) {
+        ESP_LOGI("pir", "Sensor-only test: audio playback and decoder diagnostics paused");
+        return;
+    }
     // Decoder scratch arrays need more stack than the default app_main task.
-    BaseType_t result = xTaskCreate(player_task, "mp3_player", 24576, NULL, 5, NULL);
+    BaseType_t result = xTaskCreate(player_task, "mp3_player", 24576, NULL, 5, &player_handle);
     ESP_ERROR_CHECK(result == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
 }
