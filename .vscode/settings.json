@@ -1,0 +1,7 @@
+{
+    "cmake.sourceDirectory": "${workspaceFolder}",
+    "idf.buildPath": "${workspaceFolder}/build",
+    "idf.currentSetup": "C:/Users/Familie_Ruvalcaba/Documents/Arduino/Espressif/frameworks/esp-idf-v5.3.1/",
+    "idf.flashType": "UART",
+    "idf.port": "COM3"
+}
