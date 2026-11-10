@@ -1,9 +1,11 @@
 #include <errno.h>
+#include <stdatomic.h>
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 #include "driver/i2s_std.h"
 #include "driver/gpio.h"
+#include "esp_adc/adc_oneshot.h"
 #include "driver/spi_common.h"
 #include "esp_check.h"
 #include "esp_log.h"
@@ -27,14 +29,22 @@
 #define PIR_POLL_MS 20
 // 1 enables motion-triggered audio; 0 runs only the sensor monitor.
 #define ENABLE_AUDIO_PLAYBACK 1
-#define VOLUME_PERCENT 20
 #define ENABLE_DECODER_DEBUG 0
+#define ENABLE_VOLUME_DEBUG 0 // Raw knob readings once per second while testing.
+// Potentiometer full-scale ceiling; keep conservative for the small speaker.
+#define VOLUME_PERCENT 40
+#define VOLUME_ADC_CHANNEL ADC_CHANNEL_5 // ADC1 channel 5 = exposed GPIO5
+#define VOLUME_POLL_MS 50
+#define VOLUME_ADC_MIN 40
+#define VOLUME_ADC_MAX 4000
+#if VOLUME_PERCENT < 0 || VOLUME_PERCENT > 100
+#error VOLUME_PERCENT must be between 0 and 100
+#endif
 // 120 ms at 48 kHz: covers measured ~39 ms SD read stalls with margin.
 // 12 x 480 stereo 16-bit frames consume 23,040 bytes of DMA sample memory.
 #define DMA_DESCRIPTORS 12
 #define DMA_FRAMES 480
 
-// Keep operational sensor/playback messages and all errors visible.
 #define DECODER_LOGI(...) do { if (ENABLE_DECODER_DEBUG) { ESP_LOGI(__VA_ARGS__); } } while (0)
 
 typedef struct {
@@ -73,6 +83,7 @@ static i2s_chan_handle_t tx;
 static int current_rate = 32000;
 static SemaphoreHandle_t playback_ready;
 static TaskHandle_t player_handle;
+static atomic_int volume_gain_q15 = 0; // Start muted until the first valid ADC reading.
 
 
 static esp_err_t write_audio(const int16_t *data, size_t bytes)
@@ -118,6 +129,7 @@ static bool play_mp3(const char *path)
     bool ok = skip_id3(file);
     size_t available = 0;
     unsigned frames = 0;
+    int previous_gain = 0;
     timing_t timing = {.last_report = esp_timer_get_time()};
     HMP3Decoder decoder = MP3InitDecoder();
     if (!decoder) {
@@ -125,7 +137,7 @@ static bool play_mp3(const char *path)
         fclose(file);
         return false;
     }
-    ESP_LOGI(TAG, "Playing %s (volume %d%%)", path, VOLUME_PERCENT);
+    ESP_LOGI(TAG, "Playing %s (potentiometer volume; maximum %d%%)", path, VOLUME_PERCENT);
     while (ok) {
         int64_t cycle_start = esp_timer_get_time();
         // Read ahead in larger chunks instead of a small SD read every frame.
@@ -214,14 +226,18 @@ static bool play_mp3(const char *path)
             timing.last_write_end = 0; // Clock changes intentionally interrupt DMA.
         }
         int samples = info.outputSamps / info.nChans;
+        int target_gain = atomic_load_explicit(&volume_gain_q15, memory_order_relaxed);
         for (int i = 0; i < samples; ++i) {
             // Mix to mono and duplicate so either amplifier channel works.
             int32_t sample = pcm[i * info.nChans];
             if (info.nChans == 2) sample = (sample + pcm[2 * i + 1]) / 2;
-            int16_t quiet = sample * VOLUME_PERCENT / 100;
+            // Ramp over this frame to avoid clicks when moving the knob.
+            int gain = previous_gain + (target_gain - previous_gain) * (i + 1) / samples;
+            int16_t quiet = sample * gain / 32768;
             stereo[2 * i] = quiet;
             stereo[2 * i + 1] = quiet;
         }
+        previous_gain = target_gain;
         int64_t write_start = esp_timer_get_time();
         uint64_t prepare_us = write_start - cycle_start;
         if (timing.last_write_end) {
@@ -326,6 +342,53 @@ static void player_task(void *arg)
     }
 }
 
+static void volume_task(void *arg)
+{
+    (void)arg;
+    adc_oneshot_unit_handle_t adc;
+    adc_oneshot_unit_init_cfg_t unit_config = {.unit_id = ADC_UNIT_1};
+    ESP_ERROR_CHECK(adc_oneshot_new_unit(&unit_config, &adc));
+    adc_oneshot_chan_cfg_t channel_config = {
+        .bitwidth = ADC_BITWIDTH_12,
+        .atten = ADC_ATTEN_DB_12,
+    };
+    ESP_ERROR_CHECK(adc_oneshot_config_channel(adc, VOLUME_ADC_CHANNEL, &channel_config));
+    ESP_LOGI("volume", "10k potentiometer on GPIO5 (ADC1_CH5); range mute to %d%%", VOLUME_PERCENT);
+    int filtered = -1;
+    bool read_error = false;
+    int64_t last_log = 0;
+    while (true) {
+        int total = 0;
+        esp_err_t error = ESP_OK;
+        for (int i = 0; i < 8; ++i) {
+            int raw;
+            error = adc_oneshot_read(adc, VOLUME_ADC_CHANNEL, &raw);
+            if (error != ESP_OK) break;
+            total += raw;
+        }
+        if (error == ESP_OK) {
+            int raw = total / 8;
+            filtered = filtered < 0 ? raw : (filtered * 3 + raw) / 4;
+            int position = filtered <= VOLUME_ADC_MIN ? 0 :
+                filtered >= VOLUME_ADC_MAX ? 4095 :
+                (filtered - VOLUME_ADC_MIN) * 4095 / (VOLUME_ADC_MAX - VOLUME_ADC_MIN);
+            int gain = position * (32768 * VOLUME_PERCENT / 100) / 4095;
+            atomic_store_explicit(&volume_gain_q15, gain, memory_order_relaxed);
+            int64_t now = esp_timer_get_time();
+            if (ENABLE_VOLUME_DEBUG && now - last_log >= 1000000) {
+                ESP_LOGI("volume", "GPIO5 raw=%d filtered=%d gain=%d/%d%%", raw, filtered,
+                         gain * 100 / 32768, VOLUME_PERCENT);
+                last_log = now;
+            }
+            read_error = false;
+        } else if (!read_error) {
+            ESP_LOGW("volume", "ADC read failed: %s; retaining previous volume", esp_err_to_name(error));
+            read_error = true;
+        }
+        vTaskDelay(pdMS_TO_TICKS(VOLUME_POLL_MS));
+    }
+}
+
 static void sensor_task(void *arg)
 {
     (void)arg;
@@ -359,9 +422,14 @@ static void sensor_task(void *arg)
 
 void app_main(void)
 {
+    ESP_LOGI("birdbox", "FW=pot-gpio5-v1 built %s %s; decoder_debug=%d; max_volume=%d%%",
+             __DATE__, __TIME__, ENABLE_DECODER_DEBUG, VOLUME_PERCENT);
+    if (!ENABLE_DECODER_DEBUG) esp_log_level_set("audio_diag", ESP_LOG_NONE);
     ESP_LOGI("birdbox", "Motion playback enabled=%d; volume=%d%%", ENABLE_AUDIO_PLAYBACK, VOLUME_PERCENT);
     playback_ready = xSemaphoreCreateBinary();
     ESP_ERROR_CHECK(playback_ready ? ESP_OK : ESP_ERR_NO_MEM);
+    BaseType_t volume_result = xTaskCreate(volume_task, "volume_control", 3072, NULL, 2, NULL);
+    ESP_ERROR_CHECK(volume_result == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
     BaseType_t sensor_result = xTaskCreate(sensor_task, "pir_monitor", 3072, NULL, 3, NULL);
     ESP_ERROR_CHECK(sensor_result == pdPASS ? ESP_OK : ESP_ERR_NO_MEM);
     if (!ENABLE_AUDIO_PLAYBACK) {
