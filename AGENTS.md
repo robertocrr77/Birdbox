@@ -1,4 +1,4 @@
-﻿# Birdbox project context
+# Birdbox project context
 
 Read README.md before changing firmware or recommending hardware connections.
 README.md contains the complete hardware inventory, recorded wiring, setup,
@@ -7,7 +7,78 @@ synchronized with firmware changes. This context was reconciled with saved
 main/main.c and README.md on 2026-11-10; no new build or hardware test was
 performed as part of that documentation update.
 
-## Goal and hardware status
+## Active V2 implementation — 2026-11-17
+
+This section supersedes the V1 saved-source descriptions below. Active main/main.c
+is V2, marker FW=birdbox-v2-light. Original V1 is main/main-v1.c.reference,
+excluded from CMake. No flash or physical test has been performed.
+GPIO0=PIR EXT1 wake; GPIO22=peripheral enable; GPIO5=volume;
+GPIO4=light ADC1_CH4; GPIO14=light divider excitation. GPIO4/14 exposure was
+checked against the exact Waveshare pinout, saved in resources/esp32-c6-pinout.webp.
+Schematic/PCB include R5 47k, C1 100n and J6 for external LDR R6. J6 1=ADC4,
+2=GND. Divider GPIO14 -> R5 -> ADC4 -> LDR -> GND; C1 ADC4 to GND.
+GPIO14 is HIGH while awake and held LOW during sleep. GPIO4 is also a strapping
+pin: boot/reset testing across light conditions remains required.
+User measured 7k and 88k in allowed lighting. Night above 100k for 3 seconds;
+day below 90k. Starting calibrated thresholds 2245/2168 mV assume 3.300 V
+excitation and need assembled calibration. Night uses timer-only sleep with
+30-second checks; daytime uses PIR + timer and LOW rearm if PIR already HIGH.
+No autoplay on boot/daylight return; retain six-track index across sleep;
+darkness-interrupted tracks are consumed. Fade approximately 200 ms, close file,
+drain I2S, unmount SD/free SPI, float interfaces and switch rail OFF.
+3/5 second success/failure cooldowns retained. Mount failures consume the trigger
+and retry on the next new motion. All source code is unverified on hardware.
+ESP-IDF 5.3.1 esp32c6 build and host C light-policy tests passed; KiCad ERC has
+zero errors/warnings and exported nets match PCB pads. Board remains unrouted.
+See resources/V2-Light-Sensor.md for details and remaining acceptance work.
+Q2 is PN2222A, onsemi E1/B2/C3 pinout; Q1 remains NDP6020P, ordered by user.
+
+## Historical context and hardware status
+
+V2 KiCad schematic is resources/schematics/schematics.kicad_sch. Proposed V2
+GPIO allocation is PIR wake GPIO0, peripheral enable GPIO22, volume GPIO5.
+GPIO0/22 exposure was verified against the Waveshare pinout. V1 firmware is
+still unchanged. Project-local V2Modules symbols and library tables are added.
+Pending schematic-to-PCB details include XL63020-M versus ordered XL63070
+identity/footprint, actual AM312 pin order and legacy Q1 sourcing.
+User clarified battery and speaker wires solder directly to the charger and
+amplifier before module installation. These bypass Motherboard copper.
+Added J3/J4 and amplifier symbol output pins 8/9 were removed accordingly.
+
+V2 added switching parts must be through-hole (user requirement). TPS22918 SMD
+proposal is superseded. See resources/V2-Through-Hole-Power-Switch.md for a
+concrete PMOS/NPN reference design and values. Its NDP6020P reference is obsolete;
+cheap local current-production PMOS sourcing remains open. Do not present
+prototype calculations as hardware tests or the reference BOM as production-ready.
+
+V2 planning started on 2026-11-15; see README.md's V2 motherboard section.
+User confirmed 3700 mAh battery capacity, existing sensor, motherboard-mounted
+charger/regulator/SD/amplifier/potentiometer/added circuitry, and cabled power
+switch and speaker. Requested switch position is between battery output and
+regulator input; exact power circuitry is not established. Preserve full
+six-track sequence and cooldowns. Deep sleep and peripheral power switching
+are V2 requirements, not implemented features. Housing meshes are in resources/;
+outer bounds are not PCB clearance dimensions. Daily trigger count/runtime
+target is unspecified and is not a prerequisite for schematic planning.
+Component links and the V2 schematic planning template are now recorded in
+resources/V2-Motherboard.md. Pot: Piher PT10MV10-103A2020-E-S. Existing PIR:
+user-supplied ARCELI listing B07RJQMD9G; physical pin order remains unverified.
+Charger/regulator links do not yet establish circuits, ratings or footprints.
+User clarified that the external switch separates charger module load output
+from regulator input: charge with switch OFF; play with charging disconnected.
+Concurrent charging/playback is not required. Use protected output terminals,
+once verified; the charger remains connected to the battery with switch OFF.
+This manual operating procedure does not imply an automatic USB interlock.
+RBS16401 was only a similar regulator example, not the installed hardware.
+Actual regulator listing supplied by user: 4.5–7 V input, 3.3 V up to 800 mA,
+about 1.2 V headroom, 8.6 x 12.33 mm, power indicator. User reports prototype
+operation. These are listing ratings, not measurements. A one-cell 4.2 V
+TP4056-charged battery is below its specified input range; battery supply
+architecture remains unresolved. See README.md and resources/V2-Motherboard.md.
+Battery now identified from user screenshot: OCTelect LP103395 / 103395 LiPo,
+3.7 V nominal, 3700 mAh, 13.7 Wh, listing says JST connector. Exact connector,
+polarity, dimensions, protection and permitted currents remain unverified.
+Do not infer that a retail two-pack means two cells will be used in the device.
 
 Build a sensor-triggered, battery-powered birdbox playing natural ambience
 from microSD MP3 files, inspired by the Relaxound Birdybox linked in README.md.

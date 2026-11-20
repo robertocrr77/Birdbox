@@ -1,0 +1,5 @@
+(fp_lib_table
+	(version 7)
+	(lib (name "My_Modules") (type "KiCad") (uri "${KIPRJMOD}/My_Modules.pretty") (options "") (descr "Existing project module footprints"))
+	(lib (name "My_Modules") (type "KiCad") (uri "C:/Users/Familie_Ruvalcaba/Downloads/XL63020-M_KiCad10/My_Modules.pretty") (options "") (descr ""))
+)

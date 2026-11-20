@@ -1,0 +1,218 @@
+(footprint "XL63020-M_PhotoEstimate"
+	(version 20260206)
+	(generator "pcbnew")
+	(generator_version "10.0")
+	(layer "F.Cu")
+	(descr "HEStore 100.516.58 board 26.2 x 17.4 mm. Hole coordinates estimated from product photo.")
+	(tags "XL63020 TPS63020 breakout buck boost photo estimate")
+	(property "Reference" "REF**"
+		(at 0 -9.8 0)
+		(layer "F.SilkS")
+		(uuid "284a0369-b2ce-4e37-843f-47afe830cf23")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Value" "XL63020-M"
+		(at 0 9.9 0)
+		(layer "F.Fab")
+		(uuid "94d91771-b7bf-412f-aa94-2cdc26edfc09")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+		)
+	)
+	(property "Datasheet" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "5452f024-9d07-459a-9ea4-11097dc518fd")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(property "Description" ""
+		(at 0 0 0)
+		(layer "F.Fab")
+		(hide yes)
+		(uuid "884029f3-c9b4-48c3-b090-d09ad563b429")
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+	)
+	(attr through_hole)
+	(duplicate_pad_numbers_are_jumpers no)
+	(fp_rect
+		(start -13.2 -8.8)
+		(end 13.2 8.8)
+		(stroke
+			(width 0.12)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.SilkS")
+		(uuid "487f146d-9080-4c36-b4b3-26e436a8734c")
+	)
+	(fp_rect
+		(start -13.6 -9.2)
+		(end 13.6 9.2)
+		(stroke
+			(width 0.05)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.CrtYd")
+		(uuid "57daffbc-2a88-46cc-8e56-d7e8f7b573d7")
+	)
+	(fp_rect
+		(start -13.1 -8.7)
+		(end 13.1 8.7)
+		(stroke
+			(width 0.1)
+			(type solid)
+		)
+		(fill no)
+		(layer "F.Fab")
+		(uuid "4c7cd73d-7d7e-4ab4-b69b-2f26afe4f668")
+	)
+	(fp_text user "GND"
+		(at -9.1 -6.08 0)
+		(layer "F.SilkS")
+		(uuid "0df0ca70-294f-4be6-929c-7b8fc97c8a60")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(fp_text user "VIN"
+		(at -9.1 6.08 0)
+		(layer "F.SilkS")
+		(uuid "e56f7a1c-963c-48a8-8246-57dfccf79a3d")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(fp_text user "GND"
+		(at 9.1 -6.08 0)
+		(layer "F.SilkS")
+		(uuid "5ef71bdf-f36d-4d95-9b20-c92c5a335292")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(fp_text user "OUT"
+		(at 9.1 6.08 0)
+		(layer "F.SilkS")
+		(uuid "68f5cb70-c5dc-40f2-8989-e93bca81416d")
+		(effects
+			(font
+				(size 0.8 0.8)
+				(thickness 0.12)
+			)
+		)
+	)
+	(fp_text user "PHOTO ESTIMATE"
+		(at 0 0 0)
+		(layer "F.Fab")
+		(uuid "cb30e429-6317-4930-bf0c-94fc1a61627e")
+		(effects
+			(font
+				(size 0.9 0.9)
+				(thickness 0.14)
+			)
+		)
+	)
+	(pad "1" thru_hole rect
+		(at -12 -7.35)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "d4225112-2a42-4919-aacf-92ddefbb2967")
+	)
+	(pad "1" thru_hole circle
+		(at -12 -4.81)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "3525a388-0b85-4f13-980b-d21afb053ef9")
+	)
+	(pad "2" thru_hole circle
+		(at -12 4.81)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "3526f918-ad8e-4af4-8d38-ffe775c06188")
+	)
+	(pad "2" thru_hole circle
+		(at -12 7.35)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "5803add6-29c4-42f3-95c1-d12605995be5")
+	)
+	(pad "3" thru_hole circle
+		(at 12 -7.35)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "acdffa5e-5cdd-4153-ad3a-5439e854e357")
+	)
+	(pad "3" thru_hole circle
+		(at 12 -4.81)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "6526ea0d-88b7-46b0-86ce-b93764e378a4")
+	)
+	(pad "4" thru_hole circle
+		(at 12 4.81)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "481fa2d8-83d6-451c-9100-a63513eacbb1")
+	)
+	(pad "4" thru_hole circle
+		(at 12 7.35)
+		(size 2 2)
+		(drill 1.1)
+		(layers "*.Cu" "*.Mask")
+		(remove_unused_layers no)
+		(uuid "f825b607-dc4a-4fc0-b277-187f86bf17f4")
+	)
+	(embedded_fonts no)
+	(model "${KICAD_XL63020_DIR}/XL63020.3dshapes/XL63020-M_Approximate.step"
+		(offset
+			(xyz 0 0 0)
+		)
+		(scale
+			(xyz 1 1 1)
+		)
+		(rotate
+			(xyz 0 0 0)
+		)
+	)
+)
