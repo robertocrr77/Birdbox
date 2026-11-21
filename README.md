@@ -6,6 +6,33 @@ This README consolidates the project history, wiring, firmware behavior, setup, 
 
 ## Current status
 
+### V2 motherboard routing
+
+The saved two-layer PCB is routed. C1 moved closer to GPIO4. Signal traces
+are 0.20 mm, the five supply nets use 0.60–0.80 mm traces, and B.Cu has a
+ground pour with thermal reliefs. KiCad DRC and schematic parity reported
+zero violations, zero unconnected pads, and zero schematic differences.
+Assembly and electrical acceptance checks remain pending.
+
+### Two-pole master switch
+
+SW1 is one external latching DPDT pushbutton. Four individual wires solder
+to two separate pairs of motherboard through-holes. Use the pin numbering
+from the continuity-tested switch drawing.
+
+| Motherboard pad | Net | Switch pin |
+| --- | --- | --- |
+| J5.1 | TP4056 protected OUT+ | 1 |
+| J5.2 | XL63020 VIN | 2 |
+| J7.1 | XL63020 VOUT | 4 |
+| J7.2 | +3V3_AON | 5 |
+
+ON closes 1–2 and 4–5. OFF connects 2–3 and 5–6 on the switch; pins 3 and 6
+have no wires. Set SW1 to OFF when charging or flashing over the ESP32's USB
+port. This opens both the battery feed and the connection between the
+XL63020 output and the USB-powered 3.3 V rail. System ground remains common.
+The switch's DC current rating and assembled behavior still need verification.
+
 ### V2 light sensing and deep sleep — 2026-11-17
 
 Active firmware is `FW=birdbox-v2-light`. It implements motion wake, switched
@@ -31,8 +58,8 @@ The six-track index survives deep sleep; cold reset starts at track 1.
 
 ESP-IDF 5.3.1 ESP32-C6 build passed. Host C light-policy tests passed and KiCad
 ERC reported zero errors/warnings. Exported schematic nets match PCB pads.
-No flash or physical test was performed. The PCB remains unrouted; battery
-supply/module validation, rail timing, back-power and sleep-current checks
+No flash or physical test was performed. Battery supply/module validation,
+rail timing, back-power and sleep-current checks
 are still required. See [V2 light circuit and behavior](resources/V2-Light-Sensor.md)
 for complete wiring, calibration, test scope and acceptance checks.
 Original source is retained in `main/main-v1.c.reference` and is not compiled.
@@ -50,7 +77,7 @@ OL reversed; this does not independently verify emitter/collector identity.
 No firmware change or power-switch hardware test was performed.
 KiCad 10 ERC after this substitution reported zero errors and zero warnings.
 Exported Q2 net assignments match the PCB pads and both symbol definitions;
-the board has no routed tracks.
+the board was unrouted at the time of the substitution.
 
 ### V2 KiCad schematic connections — 2026-11-15
 
@@ -62,11 +89,8 @@ pinout image. GPIO5 remains the volume wiper input. ESP32 and PIR use
 through-hole PMOS/NPN reference circuit. These connections are a proposed V2
 design and await physical verification.
 
-The schematic includes Q1 NDP6020P, Q2 PN2222A, four axial resistors and external
-master-switch cable connector J5. SW1 is represented as a latching SPST.
-J5 is the physical Motherboard connection for the two switch wires. SW1
-represents that external switch and is excluded from the PCB. On 2026-11-16,
-the stale, unconnected SW1 footprint was removed from the board file.
+The schematic includes Q1 NDP6020P, Q2 PN2222A, four axial resistors and the
+J5/J7 solder pads for external master switch SW1. SW1 is excluded from the PCB.
 User clarified that battery wires solder directly to the charger and speaker
 wires directly to the amplifier before the modules are installed. These
 connections bypass Motherboard copper. Added J3/J4 and amplifier symbol pins
@@ -78,10 +102,9 @@ GND. The PIR connector retains the user's pin assignment of
 KiCad 10 CLI export and ERC passed with zero errors and zero warnings. Exported
 netlist checks passed for wake, control, volume, power rails and separation of
 battery-negative from protected system ground. The rendered A3 drawing was
-visually checked. Regulator symbol
-U4 currently represents XL63020-M with a photo-estimated footprint, while the
-ordering discussion identified XL63070. Delivered-module identity and footprint
-need confirmation. Battery and speaker connections are made directly on their
+visually checked. U4 is the user-confirmed XL63020/TPS63020 module. The
+previously reviewed footprint and STEP model are retained. Battery and speaker
+connections are made directly on their
 modules and require no Motherboard connector footprints.
 Q1 is obsolete; the user has purchased NDP6020P parts, delivery pending. V2 firmware now implements sleep/wake and power sequencing; hardware validation remains pending.
 
@@ -97,7 +120,7 @@ V2 power-switching working plan uses the through-hole circuit described above.
 Safe signal states and switched SD pull-ups are required to prevent back-power.
 Regulator/module validation and startup-current measurements remain pending.
 
-V2 budget regulator candidate: MakerMind RBS18349 XL63070/TPS63070 buck-boost
+Earlier V2 regulator candidate: MakerMind RBS18349 XL63070/TPS63070 buck-boost
 module (2–16 V listed input, default 5 V, solder-selectable output, 30 x 16 mm).
 User photograph shows a 3V3 selector. Details and verification requirements
 are in resources/V2-Motherboard.md. This is not yet an accepted replacement;

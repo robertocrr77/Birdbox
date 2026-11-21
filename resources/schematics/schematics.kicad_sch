@@ -1237,7 +1237,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Switch:SW_SPST"
+		(symbol "Switch:SW_DPDT_x2"
 			(pin_names
 				(offset 0)
 				(hide yes)
@@ -1248,7 +1248,7 @@
 			(in_pos_files yes)
 			(duplicate_pin_numbers_are_jumpers no)
 			(property "Reference" "SW"
-				(at 0 3.175 0)
+				(at 0 5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -1257,8 +1257,8 @@
 					)
 				)
 			)
-			(property "Value" "SW_SPST"
-				(at 0 -2.54 0)
+			(property "Value" "SW_DPDT_x2"
+				(at 0 -5.08 0)
 				(show_name no)
 				(do_not_autoplace no)
 				(effects
@@ -1289,7 +1289,7 @@
 					)
 				)
 			)
-			(property "Description" "Single Pole Single Throw (SPST) switch"
+			(property "Description" "Switch, dual pole double throw, separate symbols"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1300,7 +1300,7 @@
 					)
 				)
 			)
-			(property "ki_keywords" "switch lever"
+			(property "ki_keywords" "switch dual-pole double-throw DPDT spdt ON-ON"
 				(at 0 0 0)
 				(show_name no)
 				(do_not_autoplace no)
@@ -1311,7 +1311,18 @@
 					)
 				)
 			)
-			(symbol "SW_SPST_0_0"
+			(property "ki_fp_filters" "SW*DPDT*"
+				(at 0 0 0)
+				(show_name no)
+				(do_not_autoplace no)
+				(hide yes)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(symbol "SW_DPDT_x2_0_0"
 				(circle
 					(center -2.032 0)
 					(radius 0.508)
@@ -1323,20 +1334,8 @@
 						(type none)
 					)
 				)
-				(polyline
-					(pts
-						(xy -1.524 0.254) (xy 1.524 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
 				(circle
-					(center 2.032 0)
+					(center 2.032 -2.54)
 					(radius 0.508)
 					(stroke
 						(width 0)
@@ -1347,9 +1346,45 @@
 					)
 				)
 			)
-			(symbol "SW_SPST_1_1"
+			(symbol "SW_DPDT_x2_0_1"
+				(rectangle
+					(start -3.175 3.81)
+					(end 3.175 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 0.254) (xy 1.5748 2.286)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SW_DPDT_x2_1_1"
 				(pin passive line
-					(at -5.08 0 0)
+					(at 5.08 2.54 180)
 					(length 2.54)
 					(name "A"
 						(effects
@@ -1367,7 +1402,7 @@
 					)
 				)
 				(pin passive line
-					(at 5.08 0 180)
+					(at -5.08 0 0)
 					(length 2.54)
 					(name "B"
 						(effects
@@ -1377,6 +1412,80 @@
 						)
 					)
 					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 2.54)
+					(name "C"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "SW_DPDT_x2_2_1"
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 2.54)
+					(name "A"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "B"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "5"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 2.54)
+					(name "C"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "6"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3834,16 +3943,7 @@
 		)
 		(uuid "4b74617f-09f2-4dad-8ebd-6291a77501a5")
 	)
-	(wire
-		(pts
-			(xy 134.62 44.45) (xy 138.43 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "51981961-da73-4ccf-b844-eca18d0a4d27")
-	)
+	(wire (pts (xy 134.62 41.91) (xy 138.43 41.91)) (stroke (width 0) (type default)) (uuid "12b41477-724e-4c9c-914a-9c2a33ce74fd"))
 	(wire
 		(pts
 			(xy 149.86 241.3) (xy 149.86 237.49)
@@ -4604,16 +4704,7 @@
 		)
 		(uuid "7627cf2d-e86a-4873-bc56-2941ef1db606")
 	)
-	(label "+3V3_AON"
-		(at 215.9 62.23 0)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left bottom)
-		)
-		(uuid "83001cca-491b-4a82-b032-970e06a1e57d")
-	)
+	(label "REGULATOR_VOUT" (at 215.9 62.23 0) (effects (font (size 0.9 0.9)) (justify left bottom)) (uuid "825c714f-314e-45d6-af41-a576403092a4"))
 	(label "GATE_PULLDOWN"
 		(at 149.86 252.73 0)
 		(effects
@@ -4784,16 +4875,7 @@
 		)
 		(uuid "d20dcd3d-1d43-4bbd-9526-36baaa105480")
 	)
-	(label "REGULATOR_VIN"
-		(at 138.43 44.45 0)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify left bottom)
-		)
-		(uuid "d460c183-8a88-48b8-b00e-83bc6b2791a9")
-	)
+	(label "PACK_PROTECTED_PLUS" (at 138.43 41.91 0) (effects (font (size 0.9 0.9)) (justify left bottom)) (uuid "bfd6a2d7-304d-4d76-aaee-c981c63a6606"))
 	(label "SD_CLK"
 		(at 270.51 127 180)
 		(effects
@@ -4854,16 +4936,7 @@
 		)
 		(uuid "dfaca9d0-0ada-4268-b170-3060fea867f1")
 	)
-	(label "PACK_PROTECTED_PLUS"
-		(at 120.65 44.45 180)
-		(effects
-			(font
-				(size 0.9 0.9)
-			)
-			(justify right bottom)
-		)
-		(uuid "e2320aad-e72f-4800-a5fc-9b9c2cb1fad2")
-	)
+	(label "REGULATOR_VIN" (at 120.65 44.45 180) (effects (font (size 0.9 0.9)) (justify right bottom)) (uuid "0a73d2b3-8d66-4315-b22a-24ba8c4c3d51"))
 	(label "+3V3_PERIPH"
 		(at 160.02 177.8 0)
 		(effects
@@ -4946,7 +5019,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "MASTER SWITCH cable"
+		(property "Value" "MASTER SW input"
 			(at 133 63.5 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -4999,6 +5072,86 @@
 			(project "schematics"
 				(path "/dbf6f1ac-3ee9-4f29-a917-1a21c5fb269f"
 					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 127 74.93 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "c3238f72-46e1-4a92-a6f0-ed99f3b29aaa")
+		(property "Reference" "J7"
+			(at 133 72.93 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "MASTER SW output"
+			(at 133 74.93 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 127 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 127 74.93 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 127 74.93 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "f65e0a30-4275-46de-8e3c-5da5c9800f7f")
+		)
+		(pin "2"
+			(uuid "35cce77b-c6af-4c1a-9f07-4d4d73b3a76d")
+		)
+		(instances
+			(project "schematics"
+				(path "/dbf6f1ac-3ee9-4f29-a917-1a21c5fb269f"
+					(reference "J7")
 					(unit 1)
 				)
 			)
@@ -5534,7 +5687,7 @@
 		)
 	)
 	(symbol
-		(lib_id "Switch:SW_SPST")
+		(lib_id "Switch:SW_DPDT_x2")
 		(at 129.54 44.45 0)
 		(unit 1)
 		(body_style 1)
@@ -5555,7 +5708,7 @@
 				)
 			)
 		)
-		(property "Value" "MASTER ON/OFF (latching, external)"
+		(property "Value" "MASTER ON/OFF (external DPDT)"
 			(at 129.54 39.37 0)
 			(show_name no)
 			(do_not_autoplace no)
@@ -5587,7 +5740,7 @@
 				)
 			)
 		)
-		(property "Description" "Push button switch, generic, two pins"
+		(property "Description" "External latching pushbutton"
 			(at 129.54 44.45 0)
 			(hide yes)
 			(show_name no)
@@ -5598,17 +5751,91 @@
 				)
 			)
 		)
-		(pin "2"
-			(uuid "a58e4139-7cae-4b66-8e80-e915dec71147")
-		)
-		(pin "1"
-			(uuid "454b1114-734a-48d8-984b-6be2e3dc76e9")
-		)
+		(pin "1" (uuid "200f8300-a2e4-4ba3-bf38-3c2d45a78d80"))
+		(pin "2" (uuid "0d3495ff-7afd-4136-804f-65f0477eb514"))
+		(pin "3" (uuid "5a8a3090-5f86-48f5-85b4-08a76da5d77b"))
 		(instances
 			(project "schematics"
 				(path "/dbf6f1ac-3ee9-4f29-a917-1a21c5fb269f"
 					(reference "SW1")
 					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Switch:SW_DPDT_x2")
+		(at 193.04 44.45 0)
+		(unit 2)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board no)
+		(in_pos_files yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "113668d8-a372-4deb-b2bc-2b0a3c7ea23c")
+		(property "Reference" "SW1"
+			(at 193.04 36.83 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "MASTER ON/OFF (external DPDT)"
+			(at 193.04 39.37 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 193.04 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 193.04 39.37 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" "External latching pushbutton"
+			(at 193.04 44.45 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "4" (uuid "75737a59-bb82-4bec-8134-0ad6ac7d006e"))
+		(pin "5" (uuid "fe067ba0-e7ce-4898-a28f-b775180d68c7"))
+		(pin "6" (uuid "8faeb404-211b-4f9a-b123-998f8aa687f1"))
+		(instances
+			(project "schematics"
+				(path "/dbf6f1ac-3ee9-4f29-a917-1a21c5fb269f"
+					(reference "SW1")
+					(unit 2)
 				)
 			)
 		)
@@ -6743,4 +6970,89 @@
 		)
 	)
 	(embedded_fonts no)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 228.6 52.07 0)
+		(unit 1)
+		(body_style 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(in_pos_files yes)
+		(dnp no)
+		(uuid "24f04413-4e0c-44d8-a3ad-304008930d24")
+		(property "Reference" "#FLG03"
+			(at 228.6 52.07 0)
+			(hide yes)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 228.6 48.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1 1)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 228.6 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Datasheet" ""
+			(at 228.6 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Description" ""
+			(at 228.6 52.07 0)
+			(show_name no)
+			(do_not_autoplace no)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(pin "1"
+			(uuid "1c6c150e-385c-402f-b6ef-2226c4366f7c")
+		)
+		(instances
+			(project "schematics"
+				(path "/dbf6f1ac-3ee9-4f29-a917-1a21c5fb269f"
+					(reference "#FLG03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(label "+3V3_AON" (at 228.6 52.07 0) (effects (font (size 0.9 0.9)) (justify left bottom)) (uuid "16d48258-715a-4f2e-a91c-af87a6b2444d"))
+	(wire (pts (xy 184.15 44.45) (xy 187.96 44.45)) (stroke (width 0) (type default)) (uuid "920658e8-4809-4320-9160-4ba2a051ea02"))
+	(label "+3V3_AON" (at 184.15 44.45 180) (effects (font (size 0.9 0.9)) (justify right bottom)) (uuid "a197fd99-79b2-4800-adef-a457f35a2a4c"))
+	(wire (pts (xy 198.12 41.91) (xy 201.93 41.91)) (stroke (width 0) (type default)) (uuid "63518c00-a4de-4291-9a7a-9248ba960fe5"))
+	(label "REGULATOR_VOUT" (at 201.93 41.91 0) (effects (font (size 0.9 0.9)) (justify left bottom)) (uuid "ac25cfec-f9e4-4ffb-897a-4ced46f62838"))
+	(no_connect (at 134.62 46.99) (uuid "4bcac5d6-69d1-411e-8bc2-9ba2f4aae8a4"))
+	(no_connect (at 198.12 46.99) (uuid "916cfa96-143f-4c32-9dae-150d027b969f"))
+	(wire (pts (xy 118.11 74.93) (xy 121.92 74.93)) (stroke (width 0) (type default)) (uuid "2850bc49-daff-47a8-b0be-c7513348e128"))
+	(label "REGULATOR_VOUT" (at 118.11 74.93 180) (effects (font (size 0.9 0.9)) (justify right bottom)) (uuid "25a5e4ad-9417-49d4-bcb8-268eb36105e6"))
+	(wire (pts (xy 118.11 77.47) (xy 121.92 77.47)) (stroke (width 0) (type default)) (uuid "8bcabc03-6300-4a0b-afb2-cf4ea1925da1"))
+	(label "+3V3_AON" (at 118.11 77.47 180) (effects (font (size 0.9 0.9)) (justify right bottom)) (uuid "6cadfe70-5e7a-4187-b1a1-d0c481b0f469"))
 )

@@ -13,13 +13,20 @@ assert ('U1','4') in nets['/PIR_WAKE_GPIO0']
 assert ('U1','10') in nets['/PERIPH_EN_GPIO22']
 assert ('U1','9') in nets['/VOLUME_ADC_GPIO5']
 assert ('Q2','3') in nets['/GATE_PULLDOWN']
+assert {('U3', '3'), ('J5', '1'), ('SW1', '1')} == nets['/PACK_PROTECTED_PLUS']
+assert {('U4', '2'), ('J5', '2'), ('SW1', '2')} == nets['/REGULATOR_VIN']
+assert {('U4', '4'), ('J7', '1'), ('SW1', '4')} == nets['/REGULATOR_VOUT']
+assert {('J1', '1'), ('Q1', '3'), ('R1', '1'), ('U1', '3'),
+        ('J7', '2'), ('SW1', '5')} == nets['/+3V3_AON']
+for unused_pin in ['3', '6']:
+    assert {('SW1', unused_pin)} in nets.values()
 board = pcbnew.LoadBoard('resources/schematics/schematics.kicad_pcb')
 actual = {(f.GetReference(),p.GetNumber()):p.GetNetname() for f in board.GetFootprints() for p in f.Pads()}
 for net,nodes in nets.items():
     for key in nodes:
         if key in actual: assert actual[key] == net, (key, net, actual[key])
-for ref in ['R5','C1','J6']:
+for ref in ['R5', 'C1', 'J5', 'J6', 'J7']:
     assert any(f.GetReference() == ref for f in board.GetFootprints())
 assert not any(f.GetReference() == 'R6' for f in board.GetFootprints())
-assert len(board.GetTracks()) == 0
-print('PASS: divider, wake, control, volume and Q2 nets; PCB matches schematic; external LDR excluded; board unrouted.')
+assert not any(f.GetReference() == 'SW1' for f in board.GetFootprints())
+print('PASS: sensing, Q2 and master switch nets match; SW1 and LDR are off-board.')

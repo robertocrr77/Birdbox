@@ -29,7 +29,8 @@ drain I2S, unmount SD/free SPI, float interfaces and switch rail OFF.
 3/5 second success/failure cooldowns retained. Mount failures consume the trigger
 and retry on the next new motion. All source code is unverified on hardware.
 ESP-IDF 5.3.1 esp32c6 build and host C light-policy tests passed; KiCad ERC has
-zero errors/warnings and exported nets match PCB pads. Board remains unrouted.
+zero errors/warnings and exported nets match PCB pads. The PCB is now routed
+with a B.Cu ground pour and passes KiCad DRC and schematic parity.
 See resources/V2-Light-Sensor.md for details and remaining acceptance work.
 Q2 is PN2222A, onsemi E1/B2/C3 pinout; Q1 remains NDP6020P, ordered by user.
 
@@ -39,8 +40,10 @@ V2 KiCad schematic is resources/schematics/schematics.kicad_sch. Proposed V2
 GPIO allocation is PIR wake GPIO0, peripheral enable GPIO22, volume GPIO5.
 GPIO0/22 exposure was verified against the Waveshare pinout. V1 firmware is
 still unchanged. Project-local V2Modules symbols and library tables are added.
-Pending schematic-to-PCB details include XL63020-M versus ordered XL63070
-identity/footprint, actual AM312 pin order and legacy Q1 sourcing.
+U4 is the user-confirmed XL63020/TPS63020 module. Its footprint and STEP model
+have already been reviewed. SW1 is a cabled latching DPDT switch, with J5
+interrupting U4 VIN and J7 interrupting U4 VOUT. See README.md for the
+switch pin table. Actual AM312 pin order and Q1/Q2 hardware checks remain open.
 User clarified battery and speaker wires solder directly to the charger and
 amplifier before module installation. These bypass Motherboard copper.
 Added J3/J4 and amplifier symbol output pins 8/9 were removed accordingly.

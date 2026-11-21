@@ -10,15 +10,18 @@ and HIGH-level wake, GPIO22 to active-HIGH peripheral power control, and GPIO5
 to the volume wiper. The exact Waveshare board pinout was checked for exposed
 GPIO0 and GPIO22. Through-hole Q1/Q2/R1–R4 switch a shared peripheral rail.
 Local symbols are in `schematics/V2Modules.kicad_sym` with project library tables.
-J5 provides the cabled master-switch interface. Battery wires solder directly
+J5 and J7 provide separate two-pad connections for the two poles of SW1.
+J5 interrupts the XL63020 input and J7 interrupts its 3.3 V output.
+See the [switch wiring table](../README.md#two-pole-master-switch).
+Battery wires solder directly
 to the charger and speaker wires directly to the amplifier before installation,
 as clarified by the user. Added J3/J4 and amplifier output pins 8/9 were removed.
 SW1 is latching. A3 page layout and named net connections
 were chosen to keep the expanded drawing readable.
 
 PIR connector pin order remains the user's 1=VCC, 2=OUT, 3=GND and needs actual
-AM312 confirmation. U4 remains the user's XL63020-M symbol until the delivered
-regulator identity is clarified. Its footprint is photo-estimated. Direct
+AM312 confirmation. U4 is the user-confirmed XL63020/TPS63020 module.
+The previously reviewed footprint and STEP model are retained. Direct
 battery and speaker connections bypass Motherboard copper. The user has ordered
 NDP6020P parts for Q1; delivery and physical validation are pending. PCB routing
 and hardware validation require follow-up work after the physical details are
@@ -77,14 +80,15 @@ for the concrete PMOS/NPN prototype circuit, values, manufacturer pin tables
 and unresolved low-cost sourcing limitation. TPS22918 below is historical,
 not the current implementation choice. The shared switched-rail concept stays.
 
-User reports ordering the discussed XL63070/TPS63070 module; receipt, selected
-output and measurements are pending. Working design uses one shared switched
+The selected XL63020/TPS63020 module uses its 3.3 V setting.
+Output voltage and performance under load still need bench verification.
+The working design uses one shared switched
 3.3 V peripheral rail to reduce parts count; this supersedes the earlier
 separate SD_POWER_EN/AMP_POWER_EN suggestion unless testing requires separate
 sequencing. No firmware or physical wiring has changed.
 
-Protected charger load output -> external master switch -> regulator VIN.
-Regulator 3.3 V output branches into:
+Protected charger load output -> SW1 pole A (J5) -> regulator VIN.
+Regulator VOUT -> SW1 pole B (J7) -> +3V3_AON, which branches into:
 
 - 3V3_AON: ESP32-C6-Zero and PIR, powered while master switch is ON.
 - TPS22918 high-side switch -> 3V3_PERIPH: SD reader supply, amplifier VIN,

@@ -99,8 +99,8 @@ KiCad ERC passed with zero errors/warnings. Exported light/wake/control/Q2
 nets match PCB pads. The light circuit drawing was rendered for visual review.
 These software checks do not establish physical operation or battery runtime.
 
-The board remains unrouted and new footprints are only staged. Existing
-module identity/footprint and enclosure-clearance issues remain unresolved.
+The board is now routed and passes KiCad DRC. Enclosure clearance and
+assembled hardware behavior still need verification.
 Validate startup rail settling (initial firmware delay 200 ms), all six tracks,
 sensor rearming, ADC calibration, daytime/nighttime transitions, fade/stop,
 SD repeated power cycling, lack of back-power, GPIO4/GPIO5 boot straps,
